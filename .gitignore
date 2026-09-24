@@ -216,3 +216,27 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Project data (CelebA images + annotations, downloaded separately, not versioned)
+/data/
+
+# Training outputs
+/checkpoints/
+/outputs/
+/runs/
+/wandb/
+.DS_Store
+
+# Frontend (React/Vite)
+node_modules/
+src/frontend/web/dist/
+.env
+.env.local
+
+# LaTeX build artifacts (report/latex/main.pdf is kept, intermediates are not)
+report/latex/*.aux
+report/latex/*.out
+report/latex/*.toc
+report/latex/*.fdb_latexmk
+report/latex/*.fls
+report/latex/*.synctex.gz

@@ -1,0 +1,78 @@
+% Schéma d'architecture du U-Net partagé (src/backend/shared/unet.py).
+% Fidèle à la configuration par défaut : base_channels=64,
+% channel_multipliers=(1,2,4,4) -> canaux [64,128,256,256],
+% résolutions 64->32->16->8, cross-attention aux étages 32/16/8.
+\begin{tikzpicture}[
+    font=\small,
+    block/.style={draw, rounded corners, minimum width=2.6cm, minimum height=0.85cm, align=center, fill=blue!6},
+    attn/.style={draw, rounded corners, minimum width=2.6cm, minimum height=0.65cm, align=center, fill=orange!12},
+    io/.style={draw, rounded corners, minimum width=2.6cm, minimum height=0.7cm, align=center, fill=green!8},
+    arr/.style={-Stealth, thick},
+    skiparr/.style={-Stealth, thick, dashed, gray},
+    timearr/.style={-Stealth, thick, purple},
+    textarr/.style={-Stealth, thick, orange!80!black},
+]
+
+% --- Colonne d'entrée / sortie (gauche) ---
+\node[io] (xin) at (0, 0) {$x_t$ \\ $(3,64,64)$};
+\node[block] (convin) at (0, -1.4) {Conv$_{3\times3}$ in};
+
+% --- Down path (espacement horizontal augmenté pour laisser respirer les
+%     labels downsample/upsample et les flèches d'injection du temps) ---
+\node[block] (d0) at (0, -3.0) {ResBlock $\times2$ \\ 64ch, 64$\times$64};
+\node[block] (d1) at (3.6, -4.8) {ResBlock $\times2$ \\ 128ch, 32$\times$32};
+\node[attn]  (a1) at (3.6, -5.75) {CrossAttn};
+\node[block] (d2) at (7.2, -7.2) {ResBlock $\times2$ \\ 256ch, 16$\times$16};
+\node[attn]  (a2) at (7.2, -8.15) {CrossAttn};
+
+% --- Bottleneck ---
+\node[block] (bn) at (10.8, -9.6) {ResBlock \\ 256ch, 8$\times$8};
+\node[attn]  (abn) at (10.8, -10.55) {CrossAttn};
+\node[block] (bn2) at (10.8, -11.4) {ResBlock};
+
+% --- Up path (symétrique) ---
+\node[block] (u2) at (14.4, -7.2) {ResBlock $\times2$ \\ 256ch, 16$\times$16};
+\node[attn]  (au2) at (14.4, -8.15) {CrossAttn};
+\node[block] (u1) at (18.0, -4.8) {ResBlock $\times2$ \\ 128ch, 32$\times$32};
+\node[attn]  (au1) at (18.0, -5.75) {CrossAttn};
+\node[block] (u0) at (21.6, -3.0) {ResBlock $\times2$ \\ 64ch, 64$\times$64};
+
+\node[block] (convout) at (21.6, -1.4) {Conv$_{3\times3}$ out};
+\node[io] (xout) at (21.6, 0) {$\varepsilon_\theta$ ou $v_\theta$ \\ $(3,64,64)$};
+
+% --- Flux principal ---
+\draw[arr] (xin) -- (convin);
+\draw[arr] (convin) -- (d0);
+\draw[arr] (d0) -- node[above,sloped,font=\tiny]{downsample} (d1);
+\draw[arr] (d1) -- (a1);
+\draw[arr] (a1) -- node[above,sloped,font=\tiny]{downsample} (d2);
+\draw[arr] (d2) -- (a2);
+\draw[arr] (a2) -- node[above,sloped,font=\tiny]{downsample} (bn);
+\draw[arr] (bn) -- (abn);
+\draw[arr] (abn) -- (bn2);
+\draw[arr] (bn2) -- node[above,sloped,font=\tiny]{upsample} (u2);
+\draw[arr] (u2) -- (au2);
+\draw[arr] (au2) -- node[above,sloped,font=\tiny]{upsample} (u1);
+\draw[arr] (u1) -- (au1);
+\draw[arr] (au1) -- node[above,sloped,font=\tiny]{upsample} (u0);
+\draw[arr] (u0) -- (convout);
+\draw[arr] (convout) -- (xout);
+
+% --- Skip connections (concaténation down -> up, même résolution) ---
+\draw[skiparr] (d0.east) to[bend left=15] node[above,font=\tiny]{skip} (u0.west);
+\draw[skiparr] (a1.east) to[bend left=15] node[above,font=\tiny]{skip} (au1.west);
+\draw[skiparr] (a2.east) to[bend left=15] node[above,font=\tiny]{skip} (au2.west);
+
+% --- Injection du temps t : dans CHAQUE ResBlock ---
+\node[draw, rounded corners, fill=purple!10, minimum width=2.6cm, minimum height=0.7cm, align=center] (temb) at (10.8, -1.4) {$t \to$ sinusoidal \\ $+$ MLP $\to \vec{t}$};
+\foreach \blk in {d0, d1, d2, bn, bn2, u2, u1, u0} {
+  \draw[timearr] (temb) -- (\blk);
+}
+
+% --- Injection du texte : cross-attention sur chaque bloc d'attention ---
+\node[draw, rounded corners, fill=orange!10, minimum width=2.8cm, minimum height=0.7cm, align=center] (text) at (10.8, -13.0) {CLIP texte (gelé) \\ $(77, 512)$};
+\foreach \blk in {a1, a2, abn, au2, au1} {
+  \draw[textarr] (text) -- (\blk);
+}
+
+\end{tikzpicture}

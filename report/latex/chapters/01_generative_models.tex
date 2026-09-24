@@ -1,0 +1,99 @@
+\chapter{Modèles génératifs : contexte et enjeux}
+\label{chap:generative}
+
+\section{Le problème de la génération}
+
+On dispose d'un jeu de données $\{x^{(1)}, \dots, x^{(N)}\}$ — par exemple $N$ photographies de
+visages — que l'on suppose échantillonnées indépendamment d'une distribution inconnue $p_{\text{data}}$
+sur un espace de très grande dimension (une image $64\times 64$ en couleur vit dans
+$\mathbb{R}^{64 \times 64 \times 3} = \mathbb{R}^{12288}$).
+
+\begin{definition}[Modèle génératif]
+Un modèle génératif est une procédure qui, sans connaître $p_{\text{data}}$ explicitement, permet de
+produire de nouveaux échantillons $x \sim p_\theta$ où $p_\theta$ est une distribution apprise à
+partir des données, censée approcher $p_{\text{data}}$.
+\end{definition}
+
+La difficulté centrale n'est pas de mémoriser les données d'entraînement (un modèle qui recopie une
+image du jeu d'entraînement au hasard \og génère \fg\ techniquement une image plausible, mais n'a rien
+appris d'utile) : elle est de capturer la \emph{structure} de $p_{\text{data}}$ suffisamment bien pour
+produire des échantillons \textbf{nouveaux} et \textbf{plausibles}. Pour des visages, cela veut dire
+respecter implicitement des milliers de contraintes non écrites (deux yeux symétriques, une peau dont
+la texture est cohérente avec l'éclairage, des proportions anatomiquement crédibles) sans qu'aucune de
+ces contraintes n'ait été programmée à la main.
+
+\section{Un bref panorama des approches}
+
+\subsection{Modèles à variable latente explicite : les VAE}
+
+Un \emph{auto-encodeur variationnel} (VAE) apprend conjointement un encodeur $q_\phi(z \mid x)$, qui
+compresse une image $x$ en un vecteur latent $z$ de basse dimension, et un décodeur $p_\theta(x \mid z)$,
+qui reconstruit une image à partir de $z$. En imposant que $z$ suive approximativement une loi normale
+$\mathcal{N}(0, I)$, on peut, après entraînement, générer une nouvelle image en tirant
+$z \sim \mathcal{N}(0, I)$ et en appliquant le décodeur.
+
+\begin{intuition}
+Le VAE apprend une \og carte \fg\ compacte de l'espace des images : chaque point de cette carte (le
+latent $z$) correspond à une image. Générer, c'est piocher un point au hasard sur la carte.
+\end{intuition}
+
+En pratique, les VAE produisent des images souvent légèrement floues : la loss (une borne inférieure
+de la vraisemblance, l'ELBO) pénalise moins une image \og moyennée \fg\ qu'une hallucination nette
+mais incorrecte, ce qui pousse le modèle vers des reconstructions prudentes.
+
+\subsection{Modèles adversariaux : les GAN}
+
+Un \emph{Generative Adversarial Network} (GAN) oppose deux réseaux : un générateur $G$ qui transforme
+du bruit en image, et un discriminateur $D$ qui essaie de distinguer les vraies images des images
+générées. Les deux réseaux s'entraînent simultanément, en compétition — le générateur cherchant à
+tromper le discriminateur, le discriminateur cherchant à ne pas se laisser tromper.
+
+Les GAN produisent typiquement des images très nettes (pas de flou caractéristique du VAE), mais
+l'entraînement est notoirement instable (risque d'effondrement de mode, où le générateur cesse de
+produire une variété d'images et se contente de reproduire quelques exemples qui trompent bien le
+discriminateur) et ne dispose d'aucune fonction de perte directement interprétable pour suivre la
+progression.
+
+\subsection{Modèles à transport continu : diffusion et flow matching}
+
+La famille qui nous intéresse dans ce document adopte une stratégie différente : au lieu d'apprendre
+directement une transformation \og bruit $\to$ image \fg\ en une seule étape (comme le générateur d'un
+GAN), on apprend une transformation \textbf{progressive}, décomposée en de nombreux petits pas, chacun
+faisant passer d'un état légèrement plus bruité à un état légèrement moins bruité (ou l'inverse selon
+le sens dans lequel on parcourt le processus).
+
+\begin{intuition}
+Sculpter un bloc de marbre en une statue en un seul geste est presque impossible. Le faire par des
+milliers de petits coups de burin successifs, chacun corrigeant légèrement la forme précédente, est
+beaucoup plus faisable — même si aucun coup de burin individuel ne \og sait \fg\ à quoi ressemblera la
+statue finale. C'est l'intuition centrale des modèles de diffusion et de flow matching : remplacer un
+problème de génération difficile (un grand saut) par une séquence de problèmes de \emph{raffinement
+local} beaucoup plus faciles (de petits pas).
+\end{intuition}
+
+Les deux chapitres suivants détaillent chacune de ces deux approches : les modèles de diffusion
+(chapitre~\ref{chap:ddpm}), historiquement les premiers à obtenir des résultats compétitifs avec les
+GAN sur la génération d'images, puis le flow matching (chapitre~\ref{chap:flow}), une formulation plus
+récente et plus directe du même principe.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lccc@{}}
+\toprule
+& \textbf{VAE} & \textbf{GAN} & \textbf{Diffusion / Flow Matching} \\
+\midrule
+Entraînement & stable & instable & stable \\
+Netteté des images & moyenne (flou) & élevée & élevée \\
+Diversité des échantillons & bonne & risque d'effondrement & bonne \\
+Coût de génération & 1 passe & 1 passe & de dizaines à milliers de passes \\
+Loss interprétable & oui (ELBO) & non (jeu à somme nulle) & oui (MSE) \\
+\bottomrule
+\end{tabular}
+\caption{Comparaison schématique des grandes familles de modèles génératifs d'images.}
+\end{table}
+
+Le prix à payer pour la stabilité d'entraînement et la qualité des modèles à transport continu est le
+\textbf{coût de génération} : produire une seule image nécessite d'appeler le réseau de neurones de
+nombreuses fois (typiquement de quelques dizaines à un millier de fois), contre une seule passe pour un
+GAN ou un VAE. C'est un compromis assumé par toute cette famille de modèles, diffusion comme flow
+matching.

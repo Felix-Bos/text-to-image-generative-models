@@ -1,0 +1,10 @@
+torch>=2.10
+torchvision>=0.25
+transformers>=5.17
+pillow>=12.1
+matplotlib>=3.10
+tqdm>=4.67
+tensorboard>=2.20
+fastapi>=0.139
+uvicorn[standard]>=0.51
+pydantic>=2.11

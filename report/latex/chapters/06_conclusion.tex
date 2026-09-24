@@ -1,0 +1,68 @@
+\chapter*{Conclusion et pistes d'approfondissement}
+\addcontentsline{toc}{chapter}{Conclusion et pistes d'approfondissement}
+
+Ce document a présenté les deux grandes approches actuelles de génération d'images par transport
+continu de distribution — diffusion et flow matching — depuis leurs fondements mathématiques jusqu'à
+une implémentation complète et fonctionnelle. Les deux méthodes partagent bien plus qu'il n'y paraît
+au premier abord : la même intuition (remplacer un grand saut génératif par une longue séquence de
+petits pas), la même architecture de réseau, et ne diffèrent fondamentalement que par la façon dont le
+chemin entre bruit et donnée est construit (stochastique et non-linéaire pour le DDPM, déterministe et
+linéaire pour le flow matching).
+
+\paragraph{Pistes d'approfondissement.} Plusieurs directions naturelles prolongent ce travail :
+\begin{itemize}
+    \item \textbf{Diffusion latente.} Remplacer la diffusion pixel-space par une diffusion dans
+    l'espace latent d'un VAE (comme Stable Diffusion), pour viser une résolution supérieure à
+    ressources de calcul égales.
+    \item \textbf{Schémas d'échantillonnage accélérés} pour le DDPM (DDIM, solveurs d'ordre supérieur),
+    qui réduisent le nombre d'étapes de génération sans réentraîner le réseau.
+    \item \textbf{Fine-tuning de poids pré-entraînés} : charger des poids issus d'un modèle de
+    diffusion existant dans l'architecture U-Net de ce projet, plutôt que d'entraîner entièrement
+    \emph{from scratch}.
+    \item \textbf{Évaluation quantitative} (FID, CLIP-score) pour comparer objectivement les deux
+    approches au-delà de l'inspection visuelle.
+\end{itemize}
+
+\begin{thebibliography}{9}
+
+\bibitem{ho2020ddpm}
+J. Ho, A. Jain, P. Abbeel.
+\textit{Denoising Diffusion Probabilistic Models}.
+NeurIPS, 2020.
+
+\bibitem{ho2022cfg}
+J. Ho, T. Salimans.
+\textit{Classifier-Free Diffusion Guidance}.
+NeurIPS Workshop on Deep Generative Models, 2022.
+
+\bibitem{lipman2023flow}
+Y. Lipman, R. T. Q. Chen, H. Ben-Hamu, M. Nickel, M. Le.
+\textit{Flow Matching for Generative Modeling}.
+ICLR, 2023.
+
+\bibitem{radford2021clip}
+A. Radford, J. W. Kim, C. Hallacy, et al.
+\textit{Learning Transferable Visual Models From Natural Language Supervision (CLIP)}.
+ICML, 2021.
+
+\bibitem{jiang2021celebadialog}
+Y. Jiang, Z. Huang, X. Pan, C. C. Loy, Z. Liu.
+\textit{Talk-to-Edit: Fine-Grained Facial Editing via Dialog}.
+ICCV, 2021.
+
+\bibitem{rombach2022ldm}
+R. Rombach, A. Blattmann, D. Lorenz, P. Esser, B. Ommer.
+\textit{High-Resolution Image Synthesis with Latent Diffusion Models}.
+CVPR, 2022.
+
+\bibitem{ronneberger2015unet}
+O. Ronneberger, P. Fischer, T. Brox.
+\textit{U-Net: Convolutional Networks for Biomedical Image Segmentation}.
+MICCAI, 2015.
+
+\bibitem{vaswani2017attention}
+A. Vaswani, N. Shazeer, N. Parmar, et al.
+\textit{Attention Is All You Need}.
+NeurIPS, 2017.
+
+\end{thebibliography}

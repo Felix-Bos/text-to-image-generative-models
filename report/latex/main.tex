@@ -1,0 +1,97 @@
+\documentclass[11pt,a4paper]{report}
+
+% ---------- Packages ----------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+\usepackage{geometry}
+\geometry{margin=2.4cm}
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, fit, backgrounds}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{fancyhdr}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!50!black,
+    citecolor=blue!50!black,
+    urlcolor=blue!50!black,
+    pdftitle={Text-to-Image : Diffusion et Flow Matching},
+    pdfauthor={Felix Bos},
+}
+
+\definecolor{codebg}{RGB}{245,245,248}
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{gray!40},
+    columns=fullflexible,
+    keywordstyle=\color{blue!60!black}\bfseries,
+    commentstyle=\color{green!40!black},
+    stringstyle=\color{orange!60!black},
+    showstringspaces=false,
+}
+
+% Boîte "intuition" utilisée dans tout le document.
+\newtcolorbox{intuition}[1][]{
+    enhanced, breakable, colback=blue!4, colframe=blue!40!black,
+    fonttitle=\bfseries, title=Intuition, #1
+}
+\newtcolorbox{remarque}[1][]{
+    enhanced, breakable, colback=yellow!8, colframe=orange!60!black,
+    fonttitle=\bfseries, title=Remarque, #1
+}
+\newtcolorbox{codebox}[1][]{
+    enhanced, breakable, colback=gray!4, colframe=gray!50!black,
+    fonttitle=\bfseries\ttfamily, #1
+}
+
+\newtheorem{definition}{Définition}[chapter]
+\newtheorem{propriete}{Propriété}[chapter]
+
+\setlength{\headheight}{14.5pt}
+\renewcommand{\chaptermark}[1]{\markboth{\thechapter.\ #1}{}}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\leftmark}
+\fancyhead[R]{\small\itshape Diffusion \& Flow Matching}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\title{
+    \Huge\textbf{Génération d'images à partir de texte} \\[0.3cm]
+    \Large Modèles de diffusion et Flow Matching, de la théorie à l'implémentation \\[0.5cm]
+    \large Un cours accompagné d'une implémentation complète en PyTorch
+}
+\author{Felix Bos}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\input{chapters/00_intro.tex}
+\input{chapters/01_generative_models.tex}
+\input{chapters/02_ddpm_theory.tex}
+\input{chapters/03_flow_matching_theory.tex}
+\input{chapters/04_architecture.tex}
+\input{chapters/05_project.tex}
+\input{chapters/06_conclusion.tex}
+
+\end{document}

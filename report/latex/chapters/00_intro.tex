@@ -1,0 +1,32 @@
+\chapter*{Avant-propos}
+\addcontentsline{toc}{chapter}{Avant-propos}
+
+Ce document a deux objectifs.
+
+Le premier est pédagogique : présenter, de manière aussi intuitive que rigoureuse, les deux grandes
+familles de modèles génératifs par transport continu de distribution qui dominent aujourd'hui la
+génération d'images — les \textbf{modèles de diffusion} (DDPM) et le \textbf{Flow Matching} — en
+partant des bases (qu'est-ce qu'un modèle génératif, pourquoi la génération d'images est un problème
+difficile) jusqu'aux détails d'implémentation (architecture U-Net, conditionnement par texte,
+classifier-free guidance).
+
+Le second objectif est documentaire : ce cours sert de référence théorique au dépôt de code qui
+l'accompagne (\texttt{text-\linebreak[1]to-\linebreak[1]image-\linebreak[1]generative-\linebreak[1]models}),
+une implémentation \emph{from scratch} en PyTorch des deux approches, entraînée sur le jeu de données
+CelebA-Dialog (visages annotés de légendes en langage
+naturel), conçue pour tourner entièrement en local sur un Mac Apple Silicon (accélération MPS). Le
+chapitre~\ref{chap:project} fait explicitement le lien entre chaque brique théorique et le fichier de
+code qui l'implémente.
+
+\begin{intuition}
+Le fil conducteur de tout ce document tient en une phrase : \textbf{un modèle génératif de ce type
+n'apprend pas à dessiner une image directement} — il apprend une règle de transformation simple
+(« comment transformer un peu de bruit en quelque chose d'un peu plus net ») et on obtient une image
+en appliquant cette règle un grand nombre de fois. La diffusion et le flow matching ne diffèrent que
+par la nature de cette règle et la façon dont on l'apprend.
+\end{intuition}
+
+\paragraph{Comment lire ce document.} Les chapitres~\ref{chap:generative} à~\ref{chap:architecture}
+constituent le cours proprement dit et sont indépendants du projet : ils se lisent comme une
+introduction générale aux modèles de diffusion et de flow matching. Le chapitre~\ref{chap:project} est
+spécifique à l'implémentation et suppose les chapitres précédents acquis.

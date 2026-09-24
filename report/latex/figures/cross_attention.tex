@@ -1,0 +1,30 @@
+% Schéma du mécanisme de cross-attention texte -> image (src/backend/shared/unet_blocks.py, CrossAttentionBlock).
+\begin{tikzpicture}[
+    font=\small,
+    block/.style={draw, rounded corners, minimum width=2.4cm, minimum height=0.8cm, align=center},
+    arr/.style={-Stealth, thick},
+]
+
+\node[block, fill=blue!8] (img) at (0, 3) {feature map image \\ $(B, C, H, W)$};
+\node[block, fill=blue!8] (flat) at (0, 1.6) {aplatie en séquence \\ $(B, HW, C)$};
+\node[block, fill=blue!15] (q) at (0, 0.2) {$Q = W_Q \cdot h$ \\ $(B, HW, C)$};
+
+\node[block, fill=orange!8] (txt) at (7, 3) {embeddings CLIP \\ $(B, 77, 512)$};
+\node[block, fill=orange!15] (k) at (5.5, 1.6) {$K = W_K \cdot \text{texte}$};
+\node[block, fill=orange!15] (v) at (8.5, 1.6) {$V = W_V \cdot \text{texte}$};
+
+\node[block, fill=green!12, minimum width=5cm] (attn) at (3.5, -1.4) {$\text{Attention}(Q,K,V) = \text{softmax}\!\left(\dfrac{QK^\top}{\sqrt{d}}\right) V$};
+
+\node[block, fill=blue!8] (out) at (3.5, -3) {$+$ résiduel, reshape \\ $(B, C, H, W)$};
+
+\draw[arr] (img) -- (flat);
+\draw[arr] (flat) -- (q);
+\draw[arr] (txt) -- (k);
+\draw[arr] (txt) -- (v);
+\draw[arr] (q) -- (attn);
+\draw[arr] (k) -- (attn);
+\draw[arr] (v) -- (attn);
+\draw[arr] (attn) -- (out);
+\draw[arr, dashed, gray] (img.south) to[bend right=35] node[left, font=\tiny]{skip} (out.west);
+
+\end{tikzpicture}
